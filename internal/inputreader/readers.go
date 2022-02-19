@@ -62,7 +62,7 @@ func readHypertext(url, body, method string, headers map[string]string) ([]byte,
 	return data, resp.StatusCode, nil
 }
 
-func readS3(object, bucket string) ([]byte, error) {
+func readS3(bucket, object string) ([]byte, error) {
 	awscfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
 		err = fmt.Errorf("error while creating s3 client to read %s from %s: %s", object, bucket, err.Error())

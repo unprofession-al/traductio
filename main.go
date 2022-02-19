@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/aws/aws-lambda-go/lambda"
 )
@@ -35,7 +34,6 @@ func launchAsLambda(ctx context.Context, e LambdaEvent) (string, error) {
 		args = append(args, v)
 	}
 	os.Args = args
-	fmt.Println(strings.Join(os.Args, " "))
 
 	// run
 	err := launch()
@@ -43,5 +41,10 @@ func launchAsLambda(ctx context.Context, e LambdaEvent) (string, error) {
 }
 
 func launch() error {
+	/*
+		for _, arg := range os.Args {
+			fmt.Println(arg)
+		}
+	*/
 	return NewApp().Execute()
 }

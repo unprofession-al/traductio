@@ -156,7 +156,7 @@ func (a *App) runCmd(cmd *cobra.Command, args []string) {
 		os.Exit(0)
 	}
 
-	fmt.Printf("Saving %d data points to sink", len(points))
+	fmt.Printf("Saving %d data points to sink\n", len(points))
 	err = t.Write(points)
 	defer t.Close()
 	exitOnErr(err)

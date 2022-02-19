@@ -38,6 +38,10 @@ func readFile(path string) ([]byte, error) {
 func readHypertext(url, body, method string, headers map[string]string) ([]byte, int, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, bytes.NewBufferString(body))
+	if err != nil {
+		err = fmt.Errorf("error while creating request: %s", err.Error())
+		return []byte{}, 0, err
+	}
 	for k, v := range headers {
 		req.Header.Add(k, v)
 	}

@@ -60,7 +60,7 @@ func (i Influx) Write(points []sink.Point) error {
 	}
 
 	for _, p := range points {
-		var values map[string]interface{}
+		values := map[string]interface{}{}
 		for k, v := range p.Values {
 			values[k] = v
 		}

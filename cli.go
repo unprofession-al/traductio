@@ -34,7 +34,7 @@ func NewApp() *App {
 	// root
 	rootCmd := &cobra.Command{
 		Use:   appName,
-		Short: "Feed data from ElasticSearch to sink",
+		Short: "Read data from JSON, process it and store the results in a time series database",
 	}
 	rootCmd.PersistentFlags().StringSliceVarP(&a.cfg.vars, "vars", "v", []string{}, "key:value pairs of variables to be used in the input templates")
 	rootCmd.PersistentFlags().StringVarP(&a.cfgFile, "cfg", "c", fmt.Sprintf("$HOME/%s.yaml", appName), "configuration file path")

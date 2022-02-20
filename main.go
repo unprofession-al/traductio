@@ -43,7 +43,7 @@ func launchAsLambda(ctx context.Context, e LambdaEvent) (string, error) {
 func launch() error {
 	/*
 		for _, arg := range os.Args {
-			fmt.Println(arg)
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", arg)
 		}
 	*/
 	return NewApp().Execute()

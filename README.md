@@ -186,10 +186,186 @@ To further process these values the functions `unixTimestamp` and `unixMilliTime
 
 ### Fetch
 
+Fetch finally reads the data specified in the input section. As with the option `-c` data can be read
+via HTTP/S, from S3 or from a local file by specifying the `input.url` portion accordingly. For HTTP/S
+requests the exact request can be described in the configuration:
+
+```yaml
+---
+input:
+  url: ...
+  headers: ...
+    Content-Type: application/json
+    Key: Value
+  method: GET
+  body: { "some": "json" }
+  http_expect_status: 200
+...
+```
+
+With `--stop-after Fetch` you can force `traductio` to exit and print the results of the request, e.g. the data
+to be processed.
+
 ### Validate
+
+In some cases the data fetched holds some information whether the request should be processed further. For example
+`ElasticSearch` provides information on how many shards where successfully queried and how many have failed. I case
+of failed shards the data presented might me incomplete, further processing would lead to wrong results.
+
+in the validate section these information can be analyzed. For the case described above the following validator does
+the trick:
+
+```yaml
+validators:
+  - selector: "._shards.failed"
+    expect: "0"
+```
+
+Note that the `selector` is a [`jq` like](https://github.com/itchyny/gojq) expression. To test these expressions you
+can use [`gojq`](https://github.com/itchyny/gojq) or [`jq`](https://stedolan.github.io/jq/) that matter:
+
+```
+# traductio run -c ... --stop-after Fetch | jq '._shards.failed'
+0
+```
 
 ### Process
 
+In this step the points to be fed to the time series database will be constructed. `traductio` expects the data returned
+in the `Fetch` step to have a tree structure (eg. the sort of data structure you would expect from querying `ElasticSearch`).
+Here's a simple example; lets assume we have received the following data in the `Fetch` step:
+
+```json
+{
+  ...,
+  "aggregations": {
+    "over_time": {
+      "buckets": [
+        {
+          "key_as_string": "2022-02-17T00:00:00.000+01:00",
+          "key": 1645052400000,
+          "doc_count": 26228,
+          "by_domain": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "print.geo.admin.ch",
+                "doc_count": 26228,
+                "uniq_users": {
+                  "value": 1727
+                },
+                "bytes_sent": {
+                  "value": 14225629166
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2022-02-18T00:00:00.000+01:00",
+          "key": 1645138800000,
+          "doc_count": 24489,
+          "by_domain": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "print.geo.admin.ch",
+                "doc_count": 24489,
+                "uniq_users": {
+                  "value": 1663
+                },
+                "bytes_sent": {
+                  "value": 11819885976
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
+
+```
+
+To construct the points to be stored we need to navigate thru that tree structure in an iterative manner and
+gather the data required along the way. Again this is done using [`jq` like](https://github.com/itchyny/gojq)
+expression. In that particular case a proper configuration for the processor would look like this:
+
+```yaml
+---
+...
+process:
+  no_trim: false
+  iterator:
+    selector: .aggregations.over_time.buckets[]
+    time:
+      selector: .key
+      format: unixMilliTimestamp
+    iterator:
+      selector: .by_domain.buckets[]
+      tags:
+        domain: .key
+      values:
+        request_count: .doc_count
+        bytes_sent: .bytes_sent.value
+        uniq_users: .uniq_users.value
+...
+```
+
+> Note that `traductio` will trim all points with the oldest and the newest timestamp available in the
+> data set available. This is because these border area data are often not complete when (for example if
+> data is gathered on a hourly base and the time frame considered in the ElasticSearch query does not
+> exactly start at minute :00 the data will not be complete for this first hour). To disable this behaviour
+> the `no_trim` option can be set to `true`.
+
+To build a complete point in a time series three types of values are required: A _time stamp_ which is extracted using
+the `time` portion, _tags_ (also known as _dimensions_) which are usually string values, and the values at that point
+in time reflected by a number.
+
+Executing `traductio` with the  `--stop-after Process` flag will print the points extracted from the
+raw data as CSV:
+
+```csv
+time,domain,request_count,bytes_sent,uniq_users
+2022-02-16 00:00:00 +0100 CET,www.example.com,25170.000000,13330701559.000000,1754.000000
+2022-02-17 00:00:00 +0100 CET,www.example.com,26228.000000,14225629166.000000,1727.000000
+```
+
 ### Store
 
-#
+As a last step the data must be persisted into a time series database. `traductio` supports two types of databases:
+
+_AWS Timestream_ requires the following information in the `output section`:
+
+```yaml
+---
+...
+output:
+  kind: timestream
+  connection:
+    region: [for example eu-west-1]
+    db: [name of the database]
+    series: [name of the series]
+```
+
+_InfluxDB v2_ needs the following fields to be provided:
+
+```yaml
+---
+...
+output:
+  kind: timestream
+  connection:
+    addr: [for example http://localhost:8086]
+    token: [access toker]
+    org: [name of the org]
+    bucket: [name of bucket]
+    series: [name of the series]
+```
+
+> Note that when storing data to the database an _upsert_ will be performed. This means that old data
+> with the same timestamps and tags/dimensions will be replaced.
+

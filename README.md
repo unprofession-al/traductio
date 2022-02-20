@@ -181,7 +181,7 @@ then rendered into the request body as proper timestamps.
 
 Note that for the timestamps the values on the command line have been passed in a human processable manner and the
 expanded using the `unixMilliTimestamp` function. To pass timestamps your can either use the
-[RFC3330](https://datatracker.ietf.org/doc/html/rfc3339) format or a [human readable expression](github.com/tj/go-naturaldate).
+[RFC3330](https://datatracker.ietf.org/doc/html/rfc3339) format or a [human readable expression](https://github.com/tj/go-naturaldate).
 To further process these values the functions `unixTimestamp` and `unixMilliTimestamp` can be used in the template.
 
 ### Fetch

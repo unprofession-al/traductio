@@ -10,7 +10,7 @@ space saving time series is the most obvious use case.
 
 ## Installation
 
-To install `traducito` from source you need to have (Go installed)[https://go.dev/doc/install]. With this is place
+To install `traducito` from source you need to have [Go installed](https://go.dev/doc/install). With this is place
 you can simply run:
 
 ```

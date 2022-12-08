@@ -33,6 +33,7 @@ func (c Config) Validate() ([]string, error) {
 // Sink interface needs to be implemented in order to provide a Sink
 // backend such as InfluxDB.
 type Sink interface {
+	GetName() string
 	Write(points []Point) error
 	Close()
 	//Query(cmd string) (res []client.Result, err error)

@@ -13,6 +13,7 @@ func init() {
 }
 
 type Influx struct {
+	Name   string
 	Client influxdb2.Client
 	Bucket string
 	Org    string
@@ -44,6 +45,7 @@ func setup(config map[string]string) (sink.Sink, error) {
 	c := influxdb2.NewClientWithOptions(addr, token, influxdb2.DefaultOptions().SetBatchSize(20))
 
 	i = Influx{
+		Name: fmt.Sprintf("influx:%s:%s", config["bucket"], config["series"]),
 		Client: c,
 		Org:    org,
 		Bucket: bucket,
@@ -76,4 +78,8 @@ func (i Influx) Write(points []sink.Point) error {
 
 func (i Influx) Close() {
 	i.Client.Close()
+}
+
+func (i Influx) GetName() string {
+	return i.Name
 }

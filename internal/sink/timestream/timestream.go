@@ -22,6 +22,7 @@ func init() {
 }
 
 type Timestream struct {
+	Name        string
 	DB          string
 	WriteClient *timestreamwrite.Client
 	QueryClient *timestreamquery.Client
@@ -70,6 +71,8 @@ func setup(c map[string]string) (sink.Sink, error) {
 
 	t.DB = db
 	t.Series = series
+
+	t.Name = fmt.Sprintf("timestream:%s:%s", c["db"], c["series"])
 
 	return t, nil
 }
@@ -130,4 +133,8 @@ func (t Timestream) Write(points []sink.Point) error {
 }
 
 func (t Timestream) Close() {
+}
+
+func (t Timestream) GetName() string {
+	return t.Name
 }

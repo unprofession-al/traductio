@@ -62,6 +62,7 @@ func NewApp() *App {
 }
 
 func (a *App) runCmd(cmd *cobra.Command, args []string) {
+	fmt.Printf("Run command: cfg=%s\n", a.cfgFile)
 	// validating the 'stopAfter' flag
 	if a.cfg.run.stopAfter != "" {
 		found := false
@@ -147,9 +148,10 @@ func (a *App) runCmd(cmd *cobra.Command, args []string) {
 		return
 	}
 	// STEP Store
-	fmt.Println("Going to create sink")
+	fmt.Println("Creating sink")
 	t, err := sink.New(c.Output)
 	exitOnErr(err)
+	fmt.Printf("Sink for %s created\n", t.GetName())
 
 	if len(points) < 1 {
 		fmt.Println("No data points to save")

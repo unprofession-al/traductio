@@ -1,4 +1,4 @@
-module traductio
+module github.com/geoadmin/traductiotraductio
 
 go 1.19
 

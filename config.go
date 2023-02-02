@@ -28,10 +28,10 @@ func (v Validators) ValidateContent(data []byte) (bool, []error) {
 		}
 
 		value := string(v)
-		if value != check.Expect {
-			ok = false
-			err = fmt.Errorf("value at '%s' is expected to be '%s', is '%s'", check.Selector, value, check.Expect)
-			errs = append(errs, err)
+			if value != check.Expect {
+				ok = false
+				err = fmt.Errorf("value at '%s' is expected to be '%s', is '%s'", check.Selector, check.Expect, value)
+				errs = append(errs, err)
 		}
 	}
 	return ok, errs

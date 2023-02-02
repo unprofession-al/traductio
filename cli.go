@@ -128,10 +128,6 @@ func (a *App) runCmd(cmd *cobra.Command, args []string) {
 	//points, _, fragment, err := Process(data, c.Process.Iterator, sink.Point{}, true)
 	points, _, _, err := Process(data, c.Process.Iterator, sink.Point{}, false)
 	exitOnErr(err)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
 
 	if a.cfg.run.stopAfter == StepProcess.String() {
 		info("Printing extracted points to STDOUT and last iterator fragment to STDERR and exiting...")

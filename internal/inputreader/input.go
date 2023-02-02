@@ -91,7 +91,7 @@ func (in Input) Fetch() ([]byte, error) {
 	} else if u.Scheme == "http" || u.Scheme == "https" {
 		data, status, err = readHypertext(in.URL, in.Body, in.Method, in.Headers)
 		if err == nil && in.HTTPExpectStatus != 0 && status != in.HTTPExpectStatus {
-			return data, fmt.Errorf("HTTP status code is %d, %d was expected", status, in.HTTPExpectStatus)
+			return data, fmt.Errorf("HTTP status code is %d, %d was expected.\n%s", status, in.HTTPExpectStatus, string(data))
 		}
 		return data, err
 	} else if u.Scheme == "s3" {
